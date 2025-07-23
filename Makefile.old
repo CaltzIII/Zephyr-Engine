@@ -1,0 +1,71 @@
+# Компилятор C (предполагается, что запускается из терминала MSYS2/MINGW где gcc доступен)
+CC = gcc
+
+# Флаги компиляции
+CFLAGS = -Wall -Wextra -std=c11 -O3 -Iinclude
+
+# Флаги линковщика
+LDFLAGS = -lm
+
+
+
+
+
+# Переименуй старый файл
+mv Makefile Makefile.backup
+
+# Создай новый файл
+cat > Makefile << 'EOF'
+# Компилятор C (предполагается, что запускается из терминала MSYS2/MINGW где gcc доступен)
+CC = gcc
+
+# Флаги компиляции
+CFLAGS = -Wall -Wextra -std=c11 -O3 -Iinclude
+
+# Флаги линковщика
+LDFLAGS = -lm
+
+# Директории
+SRCDIR = src
+INCDIR = include
+OBJDIR = obj
+BINDIR = bin
+
+# Имя исполняемого файла
+TARGET = $(BINDIR)/Zephyr-Engine.exe
+
+# Найти все .c файлы в директории src
+SOURCES = $(wildcard $(SRCDIR)/*.c)
+
+# Преобразовать список .c файлов в список .o файлов
+OBJECTS = $(patsubst $(SRCDIR)/%.c, $(OBJDIR)/%.o, $(SOURCES))
+
+# Все заголовочные файлы
+HEADERS = $(wildcard $(INCDIR)/*.h) $(wildcard $(SRCDIR)/*.h)
+
+.PHONY: all clean run
+
+all: $(TARGET)
+
+$(TARGET): $(OBJECTS) | $(BINDIR)
+    $(CC) $(OBJECTS) -o $@ $(LDFLAGS)
+    @echo "Сборка завершена: $@"
+
+$(OBJDIR)/%.o: $(SRCDIR)/%.c $(HEADERS) | $(OBJDIR)
+    $(CC) $(CFLAGS) -c $< -o $@
+    @echo "Скомпилирован: $< -> $@"
+
+$(OBJDIR):
+    mkdir -p $(OBJDIR)
+
+$(BINDIR):
+    mkdir -p $(BINDIR)
+
+clean:
+    rm -rf $(OBJDIR) $(BINDIR)
+    @echo "Очистка завершена"
+
+run: $(TARGET)
+    ./$(TARGET)
+
+$(OBJECTS): $(MAKEFILE_LIST)
